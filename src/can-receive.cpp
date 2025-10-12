@@ -9,8 +9,8 @@ MCP2515 mcp2515(5);
 char msgBuffer[17]; 
 
 // Stepper motor setup
-#define STEP_PIN 2
-#define DIR_PIN 3
+#define STEP_PIN 3
+#define DIR_PIN 4
 #define STEPS_PER_DEGREE 8.888889  // Adjust based on your motor specs (e.g., 200 steps/rev, 1.8°/step)
 
 AccelStepper stepper(AccelStepper::DRIVER, STEP_PIN, DIR_PIN);
