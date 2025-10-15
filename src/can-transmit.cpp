@@ -49,8 +49,8 @@ void generateMessage() {
   // Normalize position to keep it within -180° to +180° range
   expectedPosition = normalizeAngle(expectedPosition);
   
-  // Generate MV command only
-  snprintf(message, sizeof(message), "MV %d", degrees);
+  // Generate MV command only (keep it short for single CAN frame)
+  snprintf(message, sizeof(message), "MV%d", degrees); // Removed space to keep it shorter
   
   Serial.print("Move command: ");
   Serial.print(degrees);
@@ -86,15 +86,28 @@ void sendMessage() {
     if (int const rc = CAN.write(msg); rc < 0)
     {
       Serial.print("CAN.write(...) failed with error code ");
-      Serial.println(rc);    
-    } 
-    Serial.println();
+      Serial.println(rc);
+      return; // Exit if send fails
+    } else {
+      Serial.print("Successfully sent CAN frame ");
+      Serial.print(frame);
+      Serial.print(" (ID 0x");
+      Serial.print(CAN_ID_BASE + frame, HEX);
+      Serial.print("): ");
+      for (int i = 0; i < len; i++) {
+        Serial.print((char)msg_data[i]);
+      }
+      Serial.println();
+    }
     
     idx += len;
     frame++;
   }
   
-  msg_cnt++;  
+  msg_cnt++;
+  Serial.print("Total messages sent: ");
+  Serial.println(msg_cnt);
+  Serial.println("---");  
 }
 
 void setup() {

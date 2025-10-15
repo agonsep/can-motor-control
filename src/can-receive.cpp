@@ -73,9 +73,9 @@ void processCanMessage() {
       Serial.println("Error: Speed must be between 1 and 1000");
     }
     
-  } else if (message.startsWith("MV ")) {
-    // Move command: MV 90 or MV -90
-    String moveStr = message.substring(3);
+  } else if (message.startsWith("MV")) {
+    // Move command: MV90 or MV-90 (no space)
+    String moveStr = message.substring(2);
     float degrees = moveStr.toFloat();
     
     // Convert degrees to steps
@@ -98,14 +98,25 @@ void processCanMessage() {
 
 void loop() {
   // Check for CAN messages
-  if (mcp2515.readMessage(&canMsg) == MCP2515::ERROR_OK) {  
-    if (canMsg.can_id == 0x123) {      
-      // Copy CAN data to buffer
-      for (int i = 0; i < canMsg.can_dlc && i < 16; i++) {
-        msgBuffer[i] = (char)canMsg.data[i];
+  MCP2515::ERROR result = mcp2515.readMessage(&canMsg);
+  if (result == MCP2515::ERROR_OK) {  
+    // Accept messages from 0x123 to 0x126 (for multi-frame support)
+    if (canMsg.can_id >= 0x123 && canMsg.can_id <= 0x126) {      
+      // For single frame messages (ID 0x123), process directly
+      if (canMsg.can_id == 0x123) {
+        // Copy CAN data to buffer
+        for (int i = 0; i < canMsg.can_dlc && i < 16; i++) {
+          msgBuffer[i] = (char)canMsg.data[i];
+        }
+        processCanMessage();
       }
-      processCanMessage();
+      // For multi-frame messages, we could implement frame assembly here
+      // But for now, most MV commands should fit in single frame
     }       
+  } else if (result != MCP2515::ERROR_NOMSG) {
+    // Only report actual errors, not "no message" status
+    Serial.print("CAN read error: ");
+    Serial.println(result);
   }
   
   // Run stepper motor
