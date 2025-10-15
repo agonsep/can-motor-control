@@ -11,7 +11,17 @@ char msgBuffer[17];
 // Stepper motor setup
 #define STEP_PIN 3
 #define DIR_PIN 4
-#define STEPS_PER_DEGREE 8.888889  // Adjust based on your motor specs (e.g., 200 steps/rev, 1.8°/step)
+// STEPS_PER_DEGREE calculation examples:
+// - 200-step motor (1.8°/step): 200 ÷ 360 = 0.5556 steps/degree
+// - 200-step motor with 1/16 microstepping: (200 × 16) ÷ 360 = 8.8889 steps/degree  
+// - 400-step motor (0.9°/step): 400 ÷ 360 = 1.1111 steps/degree
+// 
+// TMC2208 Microstepping Settings (MS1/MS2 pins):
+// MS2=LOW,  MS1=LOW  -> 1/8  microstepping -> 4.4444 steps/degree
+// MS2=HIGH, MS1=LOW  -> 1/32 microstepping -> 17.7778 steps/degree  
+// MS2=LOW,  MS1=HIGH -> 1/64 microstepping -> 35.5556 steps/degree
+// MS2=HIGH, MS1=HIGH -> 1/16 microstepping -> 8.8889 steps/degree
+#define STEPS_PER_DEGREE 4.4444  // Currently set for NO microstepping (full steps only)
 
 AccelStepper stepper(AccelStepper::DRIVER, STEP_PIN, DIR_PIN);
 
